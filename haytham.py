@@ -69,7 +69,7 @@ async def on_voice_state_update(member, before, after):
         print('joined a generator vc')
         
         r = Room(member, guilds[0])
-        await r.create_vc(guilds[0])
+        await r.create_channels(guilds[0])
 
         rooms.append(r)
 
@@ -78,7 +78,7 @@ async def on_voice_state_update(member, before, after):
         matches = [room for room in rooms if before.channel == room.main_vc and len(room.main_vc.members) <= 0]
         
         for room in matches:
-            await room.remove_vc()
+            await room.remove_channels()
             rooms.remove(room)
 
         print('deleted room')
