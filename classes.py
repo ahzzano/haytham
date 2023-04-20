@@ -48,16 +48,23 @@ class Room:
 
         vc = await gs.guild.create_voice_channel(f'{self.owner.name}\'s Room', category=gs.generator_category, overwrites=main_vc_overwrites)
         channel = await gs.guild.create_text_channel(f'{self.owner.name}\'s Room (no-mics)', category=gs.generator_category, position=vc.position-1, overwrites=no_mics_overwrites)
+        waiting_room = await gs.guild.create_voice_channel(f'{self.owner.name}\'s Room (waiting room)', category=gs.generator_category, position=vc.position+1, overwrites=wr_vc_overwrites)
 
         self.main_vc = vc
         self.no_mics = channel
+        self.waiting_room = waiting_room
 
         await self.owner.move_to(vc)
 
     async def remove_channels(self):
         self.active = False
+
         await self.main_vc.delete()
         await self.no_mics.delete()
+        await self.waiting_room.delete()
+
+    async def request_to_join(self):
+        pass
         
 
 

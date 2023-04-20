@@ -1,6 +1,6 @@
 
 import discord
-from discord import Member, VoiceState
+from discord import Member, VoiceState, Embed
 from discord.ext import commands
 
 from classes import Room, GuildSetup
@@ -58,8 +58,9 @@ async def on_ready():
 async def on_voice_state_update(member, before, after):
     event_guild = member.guild
     
-    generator = [g for g in guilds if g.guild == event_guild][-1].generator
-    print(generator.name)
+    generator = [g for g in guilds if g.guild == event_guild][-1].generator # a server must only have 1 generator
+    active_rooms = [r for r in rooms if r.guild == event_guild]
+    waiting_rooms = [r.waiting_room for r in active_rooms]
     
     if generator == None:
         print("error")
@@ -82,6 +83,21 @@ async def on_voice_state_update(member, before, after):
             rooms.remove(room)
 
         print('deleted room')
+
+    if after.channel in waiting_rooms:
+        room = [r for r in active_rooms if r.waiting_room == after.channel][-1]
+        print(f'joining {room.main_vc.name}')
+
+        # send embed
+        
+        avatar = member.display_avatar.url
+
+        embed = Embed(title="A user wants to join!")
+        embed.set_thumbnail(url=avatar)
+
+        # buttons and view
+
+        await room.no_mics.send(embed=embed)
 
     return
 
