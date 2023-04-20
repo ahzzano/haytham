@@ -3,6 +3,8 @@ import discord
 from discord import Member, VoiceState
 from discord.ext import commands
 
+from classes import Room, GuildSetup
+
 import asyncio
 
 import json
@@ -24,6 +26,7 @@ else:
     exit()
 
 rooms = []
+guilds = []
 
 intents = discord.Intents.default()
 intents.message_content=True
@@ -51,6 +54,9 @@ def save_settings():
 
 @client.event
 async def on_ready():
+    vc = get_generator_vc()
+
+    guilds.append(GuildSetup(vc, vc.guild, vc.category))
     print('ready')
 
 # refactor this later
@@ -66,18 +72,25 @@ async def on_voice_state_update(member, before, after):
     
     if did_join_generator(before, after):
         print('joined a generator vc')
-
-        private_vc = await generator_vc.guild.create_voice_channel(f'{member.name}\'s Room ', category = generator_category)
-        await member.move_to(private_vc)
-
-        rooms.append(private_vc)
-
-    if before.channel in rooms and after.channel == None and len(before.channel.members) <= 0:
-        await asyncio.sleep(2.5)
         
-        await before.channel.delete()
+        r = Room(member, guilds[0])
+        await r.create_vc(guilds[0])
 
-        rooms.remove(before.channel)
+        #private_vc = await generator_vc.guild.create_voice_channel(f'{member.name}\'s Room ', category = generator_category)
+        #await member.move_to(private_vc)
+
+        rooms.append(r)
+
+    if after.channel == None:
+        await asyncio.sleep(2.5)
+            
+        print('left vc')
+        matches = [room for room in rooms if before.channel == room.main_vc]
+        
+        for room in matches:
+            await room.remove_vc()
+
+            rooms.remove(room)
 
         print('left room')
 
