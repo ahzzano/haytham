@@ -11,7 +11,7 @@ import json
 import os
 
 # settings stuff
-DEFAULT_SETTINGS = {'token': '', 'generator_id': 0, 'generator_category': 0, 'guild_hosted': 0}
+DEFAULT_SETTINGS = {'token': '', 'generators': []}
 SETTINGS = DEFAULT_SETTINGS
 
 if os.path.exists('settings.json'):
@@ -33,85 +33,72 @@ intents.message_content=True
 
 client = commands.Bot(command_prefix=['h'], intents=intents)
 
-def get_generator_vc(): 
-    return client.get_channel(SETTINGS['generator_id'])
-
-def get_category_channel():
-    return client.get_channel(SETTINGS['generator_category'])
-
-def did_join_generator(before, after):
-    generator_vc = get_generator_vc()
-    return before.channel == None and after.channel == generator_vc
-
 def main():
     client.run(SETTINGS['token'])
 
 def save_settings():
     print(SETTINGS)
-    with open('settings.json', 'rw') as outfile:
+    with open('settings.json', 'w') as outfile:
         outfile.write(json.dumps(SETTINGS))
 
 
 @client.event
 async def on_ready():
-    vc = get_generator_vc()
+    print('Adding Guilds')
+    for guild in SETTINGS['generators']:
+        g = client.get_guild(guild['guild'])
+        vc = g.get_channel(guild['vc'])
 
-    guilds.append(GuildSetup(vc, vc.guild, vc.category))
-    print('ready')
+        guilds.append(GuildSetup(vc, g, vc.category))
+
+    print('READY')
 
 # refactor this later
 @client.event
 async def on_voice_state_update(member, before, after):
-    generator_vc = get_generator_vc()
-
-    generator_category = generator_vc.category 
+    event_guild = member.guild
     
-    if generator_vc == None:
+    generator = [g for g in guilds if g.guild == event_guild][-1].generator
+    print(generator.name)
+    
+    if generator == None:
         print("error")
         return
     
-    if did_join_generator(before, after):
+    if before.channel == None and after.channel == generator:
         print('joined a generator vc')
         
         r = Room(member, guilds[0])
         await r.create_vc(guilds[0])
 
-        #private_vc = await generator_vc.guild.create_voice_channel(f'{member.name}\'s Room ', category = generator_category)
-        #await member.move_to(private_vc)
-
         rooms.append(r)
 
     if after.channel == None:
         await asyncio.sleep(2.5)
-            
-        print('left vc')
-        matches = [room for room in rooms if before.channel == room.main_vc]
+        matches = [room for room in rooms if before.channel == room.main_vc and len(room.main_vc.members) <= 0]
         
         for room in matches:
             await room.remove_vc()
-
             rooms.remove(room)
 
-        print('left room')
+        print('deleted room')
 
     return
-
 
 @client.command(name="setup")
 async def setup(ctx):
     await ctx.send(f'Setting up the stuff')
+
     guild = ctx.guild
 
     generator_category = await guild.create_category('Private Chat')
     generator_vc = await guild.create_voice_channel('Click here to create VC', category=generator_category)
     
-    SETTINGS['guild_hosted'] = guild.id 
-    SETTINGS['generator_category'] = generator_category.id 
-    SETTINGS['generator_id'] = generator_vc.id 
+    SETTINGS['generators'].append({'vc': generator_vc.id, 'guild': generator_vc.guild.id})
 
     save_settings()
-    print(ctx)
 
+    guilds.append(GuildSetup(generator_vc, generator_vc.guild, generator_vc.category))
 
 if __name__ == '__main__':
     main()
