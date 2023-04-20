@@ -60,7 +60,9 @@ class WaitingRoomView(discord.ui.View):
     @discord.ui.button(label="Accept!")
     async def accept_request(self, interaction, button):
         await interaction.response.send_message('accepted')
+        await self.room.add_to_allowed_members(self.requesting_member)
         await self.requesting_member.move_to(self.room.main_vc)
+
         self.stop()
 
     @discord.ui.button(label="Reject")
@@ -83,6 +85,7 @@ async def on_voice_state_update(member, before, after):
     generator = [g for g in guilds if g.guild == event_guild][-1].generator # a server must only have 1 generator
     active_rooms = [r for r in rooms if r.guild == event_guild]
     waiting_rooms = [r.waiting_room for r in active_rooms]
+    main_rooms = [r.main_vc for r in active_rooms]
     
     if generator == None:
         print("error")
@@ -95,6 +98,13 @@ async def on_voice_state_update(member, before, after):
         await r.create_channels(guilds[0])
 
         rooms.append(r)
+
+    if after.channel != None:
+        r = [r for r in active_rooms if r.main_vc == after.channel]
+
+        if len(r) >= 1:
+            if not member in r[-1].allowed_members:
+                await member.move_to(None)
 
     if after.channel == None:
         # await asyncio.sleep(2.5)

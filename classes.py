@@ -13,6 +13,7 @@ class GuildSetup:
 @dataclass()
 class Room:
     owner: Member
+    allowed_members: list[Member]
     main_vc: VoiceChannel
     waiting_room: VoiceChannel
     no_mics: TextChannel
@@ -25,6 +26,7 @@ class Room:
     def __init__(self, owner:Member, gs: GuildSetup):
         self.owner = owner 
         self.guild = gs.guild
+        self.allowed_members = []
 
     async def create_channels(self, gs: GuildSetup):
         # main_vc_permissions = PermissionOverwrite(connect=False)
@@ -43,7 +45,7 @@ class Room:
 
         no_mics_overwrites = {
             gs.guild.default_role: PermissionOverwrite(view_channel=False),
-            self.owner: PermissionOverwrite(connect=True)
+            self.owner: PermissionOverwrite(connect=True, view_channel=True)
         }
 
         vc = await gs.guild.create_voice_channel(f'{self.owner.name}\'s Room', category=gs.generator_category, overwrites=main_vc_overwrites)
@@ -55,6 +57,7 @@ class Room:
         self.waiting_room = waiting_room
 
         await self.owner.move_to(vc)
+        self.allowed_members.append(self.owner)
 
     async def remove_channels(self):
         self.active = False
@@ -63,8 +66,8 @@ class Room:
         await self.no_mics.delete()
         await self.waiting_room.delete()
 
-    async def request_to_join(self):
-        pass
+    async def add_to_allowed_members(self, member: Member):
+        self.allowed_members.append(member) 
         
 
 
