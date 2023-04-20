@@ -53,6 +53,28 @@ async def on_ready():
 
     print('READY')
 
+class WaitingRoomView(discord.ui.View):
+    requesting_member: Member
+    room: Room
+
+    @discord.ui.button(label="Accept!")
+    async def accept_request(self, interaction, button):
+        await interaction.response.send_message('accepted')
+        await self.requesting_member.move_to(self.room.main_vc)
+        self.stop()
+
+    @discord.ui.button(label="Reject")
+    async def reject_request(self, interaction, button):
+        await interaction.response.send_message('rejected')
+        await self.requesting_member.move_to(None)
+        self.stop()
+
+    def __init__(self, requesting_member: Member, room: Room):
+        super(WaitingRoomView, self).__init__()
+
+        self.requesting_member = requesting_member
+        self.room = room
+
 # refactor this later
 @client.event
 async def on_voice_state_update(member, before, after):
@@ -75,7 +97,7 @@ async def on_voice_state_update(member, before, after):
         rooms.append(r)
 
     if after.channel == None:
-        await asyncio.sleep(2.5)
+        # await asyncio.sleep(2.5)
         matches = [room for room in rooms if before.channel == room.main_vc and len(room.main_vc.members) <= 0]
         
         for room in matches:
@@ -97,7 +119,9 @@ async def on_voice_state_update(member, before, after):
 
         # buttons and view
 
-        await room.no_mics.send(embed=embed)
+        view = WaitingRoomView(member, room)
+
+        await room.no_mics.send(embed=embed, view=view)
 
     return
 
