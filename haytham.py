@@ -5,20 +5,21 @@ from discord.ext import commands
 
 from classes import Room, GuildSetup
 from views import WaitingRoomView
+from config import Config
 
 import json
 import os
 
 # settings stuff
-DEFAULT_SETTINGS = {'token': '', 'generators': []}
+DEFAULT_SETTINGS = {'generators': []}
 SETTINGS = DEFAULT_SETTINGS
 
-if os.path.exists('settings.json'):
-    with open('settings.json', 'r') as settings_file:
+if os.path.exists('data.json'):
+    with open('data.json', 'r') as settings_file:
         SETTINGS = json.load(settings_file)
 
 else:
-    with open('settings.json', 'w') as outfile:
+    with open('data.json', 'w') as outfile:
         outfile.write(json.dumps(DEFAULT_SETTINGS))
 
     print('please re-run this program')
@@ -32,12 +33,12 @@ intents.message_content=True
 
 client = commands.Bot(command_prefix=['h'], intents=intents)
 
-def main():
-    client.run(SETTINGS['token'])
+def main(config: Config):
+    client.run(config.get_token())
 
 def save_settings():
     print(SETTINGS)
-    with open('settings.json', 'w') as outfile:
+    with open('data.json', 'w') as outfile:
         outfile.write(json.dumps(SETTINGS))
 
 
@@ -51,11 +52,13 @@ async def on_ready():
             print('Error: Guild does not exist')
             continue
 
+        print(f'Adding Guild: {g.name}')
+
         vc = g.get_channel(guild['vc'])
 
         guilds.append(GuildSetup(vc, g, vc.category))
 
-    print('READY')
+    print('Loaded')
 
 # refactor this later
 @client.event
@@ -133,4 +136,7 @@ async def setup(ctx):
     guilds.append(GuildSetup(generator_vc, generator_vc.guild, generator_vc.category))
 
 if __name__ == '__main__':
-    main()
+    c = Config.load_config('settings.yaml')
+    print(c.configuration)
+
+    main(c)

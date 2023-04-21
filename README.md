@@ -14,4 +14,8 @@ Haytham is a Temp VC Manager with Zoom like features for Discord servers
 
 - [@ahzzan](https://github.com/ahzzano)
 
+## Dependencies
+- Discord.py
+- PyYAML
+
 
