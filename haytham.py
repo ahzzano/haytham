@@ -83,7 +83,7 @@ async def on_voice_state_update(member, before, after):
             if not member in r[-1].allowed_members:
                 await member.move_to(None)
 
-    if after.channel == None:
+    if before.channel in main_rooms or after.channel == None:
         # await asyncio.sleep(2.5)
         matches = [room for room in rooms if before.channel == room.main_vc and len(room.main_vc.members) <= 0]
         

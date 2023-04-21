@@ -18,7 +18,7 @@ class Room:
     waiting_room: VoiceChannel
     no_mics: TextChannel
     guild: Guild
-    active: True
+    active: bool
 
     async def delete(self):
         await self.main_vc.delete()
@@ -26,6 +26,7 @@ class Room:
     def __init__(self, owner:Member, gs: GuildSetup):
         self.owner = owner 
         self.guild = gs.guild
+        self.active = True
         self.allowed_members = []
 
     async def create_channels(self, gs: GuildSetup):
