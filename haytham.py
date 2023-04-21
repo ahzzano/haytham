@@ -1,12 +1,10 @@
 
 import discord
-from discord import Member, VoiceState, Embed
+from discord import Embed
 from discord.ext import commands
 
 from classes import Room, GuildSetup
 from views import WaitingRoomView
-
-import asyncio
 
 import json
 import os
