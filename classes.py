@@ -39,7 +39,8 @@ class Room:
         }
 
         wr_vc_overwrites = {
-            gs.guild.default_role: PermissionOverwrite(connect=True)
+            gs.guild.default_role: PermissionOverwrite(connect=True),
+            self.owner: PermissionOverwrite(connect=True)
         }
 
         no_mics_overwrites = {

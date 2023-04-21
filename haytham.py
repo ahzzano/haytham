@@ -1,6 +1,6 @@
 
 import discord
-from discord import Embed, Guild, VoiceChannel
+from discord import Embed, Guild
 from discord.ext import commands
 
 from classes import Room, GuildSetup
