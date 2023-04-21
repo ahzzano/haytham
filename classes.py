@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from discord import Member, VoiceState, VoiceChannel, TextChannel, Guild, CategoryChannel, PermissionOverwrite
-
-import asyncio
+from discord import Member, VoiceChannel, TextChannel, Guild, CategoryChannel, PermissionOverwrite
 
 @dataclass(init=True)
 class GuildSetup:
