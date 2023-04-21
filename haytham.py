@@ -1,6 +1,6 @@
 
 import discord
-from discord import Embed
+from discord import Embed, Guild, VoiceChannel
 from discord.ext import commands
 
 from classes import Room, GuildSetup
@@ -24,8 +24,8 @@ else:
     print('please re-run this program')
     exit()
 
-rooms = []
-guilds = []
+rooms: list[Room] = []
+guilds: list[GuildSetup] = []
 
 intents = discord.Intents.default()
 intents.message_content=True
@@ -45,7 +45,12 @@ def save_settings():
 async def on_ready():
     print('Adding Guilds')
     for guild in SETTINGS['generators']:
-        g = client.get_guild(guild['guild'])
+        g: Guild | None = client.get_guild(guild['guild'])
+
+        if g is None:
+            print('Error: Guild does not exist')
+            continue
+
         vc = g.get_channel(guild['vc'])
 
         guilds.append(GuildSetup(vc, g, vc.category))
@@ -68,9 +73,11 @@ async def on_voice_state_update(member, before, after):
     
     if before.channel == None and after.channel == generator:
         print('joined a generator vc')
+
+        g = [gs for gs in guilds if gs.guild == member.guild]
         
-        r = Room(member, guilds[0])
-        await r.create_channels(guilds[0])
+        r = Room(member, g[-1])
+        await r.create_channels(g[-1])
 
         rooms.append(r)
 
