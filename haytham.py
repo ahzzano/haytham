@@ -11,8 +11,8 @@ import json
 import os
 
 # settings stuff
-DEFAULT_SETTINGS = {'generators': []}
-SETTINGS = DEFAULT_SETTINGS
+DEFAULT_DATA = {'generators': []}
+SETTINGS = DEFAULT_DATA
 
 if os.path.exists('data.json'):
     with open('data.json', 'r') as settings_file:
@@ -20,10 +20,7 @@ if os.path.exists('data.json'):
 
 else:
     with open('data.json', 'w') as outfile:
-        outfile.write(json.dumps(DEFAULT_SETTINGS))
-
-    print('please re-run this program')
-    exit()
+        outfile.write(json.dumps(DEFAULT_DATA))
 
 rooms: list[Room] = []
 guilds: list[GuildSetup] = []
@@ -133,7 +130,9 @@ async def setup(ctx):
 
     save_settings()
 
-    guilds.append(GuildSetup(generator_vc, generator_vc.guild, generator_vc.category))
+    gs = GuildSetup(generator_vc, generator_vc.guild, generator_vc.category)
+
+    guilds.append(gs)
 
 if __name__ == '__main__':
     c = Config.load_config('settings.yaml')
