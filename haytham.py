@@ -9,6 +9,7 @@ from config import Config
 
 import json
 import os
+import datetime
 
 # settings stuff
 DEFAULT_DATA = {'generators': []}
@@ -106,14 +107,15 @@ async def on_voice_state_update(member, before, after):
         
         avatar = member.display_avatar.url
 
-        embed = Embed(title="A user wants to join!")
+        embed = Embed(title=f"A user wants to join!", timestamp=datetime.datetime.now(), description=f'User: \"{member.name}\" wants to join your private room')
         embed.set_thumbnail(url=avatar)
 
         # buttons and view
 
         view = WaitingRoomView(member, room)
 
-        await room.no_mics.send(embed=embed, view=view)
+        message = await room.no_mics.send(embed=embed, view=view)
+        
 
     return
 
